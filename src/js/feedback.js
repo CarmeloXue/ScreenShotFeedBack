@@ -1,52 +1,30 @@
 /**
  * Created by xuehaotian on 2017/3/2.
  */
+var FEEDBACK_TEMPLATE = require('../template/feedBack.html');
+var MODALWINDOW_TEMPLATE = require('../template/modalWindow.html');
+
 var app
 (function (app) {
     var feedBack = angular.module("feedBackWithScreenShot",[]);
-    feedBack.run(['$templateCache',function ($templateCache) {
-
-        $templateCache.put('feedBack/template/modalWindow.html',[
-            '<div id="modalWindow" class="modal fade">',
-            '<div class="modal-backdrop fade">',
-            '<div class="modal-dialog">',
-            '<div class="modal-content">',
-            '<div class="modal-header">',
-            '<button type="button" class="close" ng-click="hide(true)"><span>X</span></button>',
-            '<h4 class="modal-title">{{title}}</h4>',
-            '</div>',
-            '<div class="modal-body"><ng-transclude></ng-transclude></div>',
-            '<div class="modal-footer">',
-            '<button type="button" class="btn btn-default" ng-click="Confirm()">Confirm</button>',
-            '<button type="button" class="btn btn-warning" ng-click="Cancel()">Cancel</button>',
-            '</div>',
-            '</div>',
-            '</div>',
-            '</div>',
-            '</div>'
-        ].join(''));
-
-        $templateCache.put('feedBack/template/feedBack.html',[
-            '<div>',
-            '<div ng-click="showModal()" ng-transclude="">',
-            '</div>',
-            '<moldal-window title="nihao"></moldal-window>',
-            '</div>'
-        ].join(""));
-    }]);
-
 
     feedBack.directive('moldalWindow',[function () {
         return {
             restrict:'EA',
-            templateUrl:'feedBack/template/modalWindow.html',
+            template: FEEDBACK_TEMPLATE,
             scope:{
                 title:'@'
             },
             controller:['$scope','$element','modalService',function ($scope,$element,modalService) {
                 modalService.register($element);
+
                 $scope.hide = modalService.hide;
+
                 $scope.Cancel = modalService.hide;
+
+                $scope.Confirm = function(){
+
+                }
             }],
             replace:true,
             transclude:true
@@ -57,10 +35,11 @@ var app
         return {
             restrict:'EA',
             transclude:true,
-            templateUrl:'feedBack/template/feedBack.html',
-            link:link
+            template:MODALWINDOW_TEMPLATE,
+            link:link,
+            scope:true
         }
-        function link(scope,element,attrs) {
+        function link(scope,element) {
             modalService.register(element.find('#modalWindow'));
             scope.showModal = function () {
                 modalService.show();
