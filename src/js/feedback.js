@@ -5,8 +5,9 @@ var app
 (function (app) {
     var feedBack = angular.module("feedBackWithScreenShot",[]);
     feedBack.run(['$templateCache',function ($templateCache) {
+
         $templateCache.put('feedBack/template/modalWindow.html',[
-            '<div class="modal fade">',
+            '<div id="modalWindow" class="modal fade">',
             '<div class="modal-backdrop fade">',
             '<div class="modal-dialog">',
             '<div class="modal-content">',
@@ -15,6 +16,10 @@ var app
             '<h4 class="modal-title">{{title}}</h4>',
             '</div>',
             '<div class="modal-body"><ng-transclude></ng-transclude></div>',
+            '<div class="modal-footer">',
+            '<button type="button" class="btn btn-default" ng-click="Confirm()">Confirm</button>',
+            '<button type="button" class="btn btn-warning" ng-click="Cancel()">Cancel</button>',
+            '</div>',
             '</div>',
             '</div>',
             '</div>',
@@ -22,23 +27,27 @@ var app
         ].join(''));
 
         $templateCache.put('feedBack/template/feedBack.html',[
+            '<div>',
             '<div ng-click="showModal()" ng-transclude="">',
             '</div>',
-            '<modal-window title="nihao"></modal-window>',
+            '<moldal-window title="nihao"></moldal-window>',
+            '</div>'
         ].join(""));
     }]);
 
 
-    feedBack.directive('moldalWindow',['modalService',function (modalService) {
+    feedBack.directive('moldalWindow',[function () {
         return {
             restrict:'EA',
             templateUrl:'feedBack/template/modalWindow.html',
             scope:{
                 title:'@'
             },
-            link:function () {
-
-            },
+            controller:['$scope','$element','modalService',function ($scope,$element,modalService) {
+                modalService.register($element);
+                $scope.hide = modalService.hide;
+                $scope.Cancel = modalService.hide;
+            }],
             replace:true,
             transclude:true
         }
@@ -52,67 +61,66 @@ var app
             link:link
         }
         function link(scope,element,attrs) {
-            var modelWindow = element.find('.modal');
-            modalService.register(modelWindow)
-            scope.showModal = modalService.show;
+            modalService.register(element.find('#modalWindow'));
+            scope.showModal = function () {
+                modalService.show();
+            }
         }
 
     }]);
 
     feedBack.factory('modalService',[function () {
-        var service = {},
-            modelElement,
-            modalWindowFuncs;
-        service.register = function (modelElement) {
+        var modal,
+            service = {};
 
-            modelElement = modelElement;
-            modalWindowFuncs = {
-                show:service.show,
-                hide:service.hide,
-                toggle:service.toggle,
-                isOpen:service.isOpen
+        service.register = function (modalElement) {
+            modal = modalElement;
+            modal.css('zIndex',1500);
+            modal.find('.modal-backdrop').css('zIndex',0);
+        }
+
+        service.unregister = function () {
+            if(modal != null)
+            {
+                modal = null
             }
         }
-        service.unregister = function () {
-            modalWindowFuncs = null;
-        }
+
         service.show = function () {
             if(!service.isOpen())
             {
-                modelElement.css('display','block');
-                modelElement.addClass('in');
-                modelElement.find('.modal-backdrop').css('display','block');
-                modelElement.find('.modal-backdrop').addClass('in');
+                modal.css('display','block');
+                modal.addClass('in');
+                modal.children().css('display','block');
+                modal.children().addClass('in');
             }
         }
 
         service.hide = function () {
             if(service.isOpen())
             {
-                modelElement.css('display','none');
-                modelElement.removeClass('in');
-                modelElement.find('.modal-backdrop').css('display','none');
-                modelElement.find('.modal-backdrop').removeClass('in');
+                modal.css('display','none');
+                modal.removeClass('in');
+                modal.children().css('display','none');
+                modal.children().removeClass('in');
             }
         }
 
         service.toggle = function () {
             if(service.isOpen())
             {
-                service.hide();
+                service.hide()
             }
             else
             {
-                service.show();
+                service.show()
             }
         }
 
         service.isOpen = function () {
-            return modelElement.css('display') != 'none';
+            return modal.css('display') !== 'none' && modal.css('display') !== '';
         }
 
         return service;
-
     }])
-
 })(app || (app={}));
